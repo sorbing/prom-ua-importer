@@ -1,13 +1,13 @@
 ## Prom.ua importer
 
-**Laravel 5.5 package for import (or parse/fetch) products and orders from https://prom.ua.**
+**Laravel 5.5 package for import (or parse/fetch) products and orders from https://prom.ua store place.**
 
 This package provides the migrations, services and commands for parse, fetch and optional store prom.ua data.
 
 Data source is a:
 
 - **Products**: Yml (Yandex Market Language) URL or exported CSV local file.
-- **Orders**: Xml URL (contains a latest ~120 orders) or exported XLS local file.
+- **Orders**: Xml URL (contains a latest ~130 orders) or exported XLS local file.
 
 ### Requirements
 
