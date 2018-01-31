@@ -1,0 +1,40 @@
+{
+    "name": "sorbing/prom-ua-importer",
+    "description": "Import prom.ua products and orders data",
+    "keywords": ["laravel", "prom.ua", "products", "import"],
+    "version": "1.4.0",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Stanislav Butsenko",
+            "email": "svbutsenko@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "illuminate/contracts": "5.5.*",
+        "illuminate/support": "5.5.*",
+        "sirian/yandex-market-language-parser": "~3.0.2",
+        "maatwebsite/excel": "~2.1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sorbing\\PromUaImporter\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "classmap": []
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Sorbing\\PromUaImporter\\PromUaServiceProvider",
+                "Maatwebsite\\Excel\\ExcelServiceProvider"
+            ],
+            "aliases": {
+                "PromUaImporter": "Sorbing\\PromUaImporter\\PromUaImporterFacade"
+            }
+        }
+    },
+    "minimum-stability": "dev"
+}
