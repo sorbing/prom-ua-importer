@@ -10,6 +10,7 @@ class CreateProductsPromTable extends Migration
     {
         Schema::create('products_prom', function (Blueprint $table) {
             $table->increments('id');
+            $table->integer('store_id')->unsigned();
             $table->string('sku', 20)->nullable();
             $table->integer('code')->unsigned()->unique();
             $table->string('group_name')->nullable();

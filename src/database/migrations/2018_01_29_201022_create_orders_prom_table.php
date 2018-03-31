@@ -11,6 +11,7 @@ class CreateOrdersPromTable extends Migration
         Schema::create('orders_prom', function (Blueprint $table) {
             $table->increments('id');
 
+            $table->integer('store_id')->unsigned();
             $table->integer('code')->unsigned()->unique();
             $table->char('status', 10)->nullable();
             $table->dateTime('date');
