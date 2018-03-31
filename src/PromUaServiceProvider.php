@@ -8,7 +8,7 @@ use Sorbing\PromUaImporter\Console\Commands\ImportOrdersCommand;
 
 class PromUaServiceProvider extends ServiceProvider
 {
-    protected $defer = true;
+    //protected $defer = true; // @note It's not merged config prom_ua
 
     protected function getPackageIdentity()
     {
@@ -20,7 +20,6 @@ class PromUaServiceProvider extends ServiceProvider
         $identity = $this->getPackageIdentity();
 
         $configFile = __DIR__."/config/$identity.php";
-
         $this->mergeConfigFrom($configFile, "$identity");
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
 

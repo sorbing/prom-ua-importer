@@ -274,12 +274,12 @@ class PromUaImporter
         }
 
         $this->consoleInfo('* Products importing from CSV started...');
-        $additionalData = $this->getProductsFromCsv();
+        $products = $this->getProductsFromCsv();
 
-        foreach ($additionalData as $code => $additional) {
-            ProductProm::whereCode($code)->update($additional);
+        foreach ($products as $code => $data) {
+            ProductProm::where('code', $code)->update($data);
         }
-        $this->consoleInfo(sprintf('%s products were imported from CSV.', count($additionalData)));
+        $this->consoleInfo(sprintf('%s products were imported from CSV.', count($products)));
     }
 
     public function getProductsFromCsv(): array
@@ -452,8 +452,6 @@ class PromUaImporter
             $product['name'] = $offer->getName();
             $product['price'] = $offer->getPrice();
             $product['currency'] = $offer->getCurrency()->getId();
-            $product['quantity'] = 0;
-            $product['sales_num'] = 0;
             $product['description_length'] = mb_strlen($offer->getDescription());
             $product['description'] = $offer->getDescription();
             $product['url'] = $offer->getUrl();
