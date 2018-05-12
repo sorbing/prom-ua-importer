@@ -14,7 +14,7 @@ Data source is a:
 This package requires a following packages for parse Yml and Xls sources:
 
     "sirian/yandex-market-language-parser": "~3.0.2",
-    "maatwebsite/excel": "~2.1.0"
+    "maatwebsite/excel": "3.0.x-dev"
 
 ### Install
 

@@ -14,12 +14,27 @@ class PromUaImporter
     protected $products_csv_file = '';
     protected $orders_xls_file = '';
     protected $data_dir = '';
+    protected $store_id = null;
 
     public function __construct()
     {
         $this->setProductsYmlUrl(config('prom_ua.products_yml_url'));
         $this->setOrdersXmlUrl(config('prom_ua.orders_xml_url'));
         $this->setDataDir(config('prom_ua.data_dir'));
+    }
+
+    public function setDataDir($path)
+    {
+        $this->data_dir = rtrim($path, DIRECTORY_SEPARATOR);
+
+        return $this;
+    }
+
+    public function setStoreId(int $store_id)
+    {
+        $this->store_id = trim($store_id);
+
+        return $this;
     }
 
     public function setProductsYmlUrl($url)
@@ -30,23 +45,16 @@ class PromUaImporter
         return $this;
     }
 
-    public function setOrdersXmlUrl($url)
-    {
-        $this->orders_xml_url = $url;
-
-        return $this;
-    }
-
-    public function setDataDir($path)
-    {
-        $this->data_dir = rtrim($path, DIRECTORY_SEPARATOR);
-
-        return $this;
-    }
-
     public function setProductsCsvFile($path)
     {
         $this->products_csv_file = $path;
+
+        return $this;
+    }
+
+    public function setOrdersXmlUrl($url)
+    {
+        $this->orders_xml_url = $url;
 
         return $this;
     }
@@ -193,6 +201,7 @@ class PromUaImporter
         unset($order['items']);
 
         $order['broken_items_json'] = null; // @note Reset a broken_items_json
+        $order['store_id'] = $this->store_id;
         $orderModel = OrderProm::updateOrCreate(['code' => $orderCode], $order);
 
         foreach ($items as $item) {
@@ -277,6 +286,7 @@ class PromUaImporter
         $products = $this->getProductsFromCsv();
 
         foreach ($products as $code => $data) {
+            $data['store_id'] = $this->store_id;
             ProductProm::where('code', $code)->update($data);
         }
         $this->consoleInfo(sprintf('%s products were imported from CSV.', count($products)));
@@ -426,6 +436,7 @@ class PromUaImporter
         $products = $this->getProductsFromYml();
 
         foreach ($products as $product) {
+            $product['store_id'] = $this->store_id;
             ProductProm::updateOrCreate(['code' => $product['code']], $product);
         }
 

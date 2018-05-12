@@ -12,10 +12,10 @@
     ],
     "require": {
         "php": ">=7.0",
-        "illuminate/contracts": "5.5.*|5.6.*",
-        "illuminate/support": "5.5.*|5.6.*",
+        "illuminate/contracts": "~5.5|~5.6",
+        "illuminate/support": "~5.5|~5.6",
         "sirian/yandex-market-language-parser": "~3.0.2",
-        "maatwebsite/excel": "~2.1.0"
+        "maatwebsite/excel": "3.0.x-dev"
     },
     "autoload": {
         "psr-4": {
