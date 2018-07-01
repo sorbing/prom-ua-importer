@@ -2,7 +2,6 @@
     "name": "sorbing/prom-ua-importer",
     "description": "Import prom.ua products and orders data",
     "keywords": ["laravel", "prom.ua", "products", "import"],
-    "version": "1.4.0",
     "license": "MIT",
     "authors": [
         {

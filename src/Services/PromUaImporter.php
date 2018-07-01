@@ -30,6 +30,7 @@ class PromUaImporter
         return $this;
     }
 
+    // @todo Убрать этот функционал
     public function setStoreId(int $store_id)
     {
         $this->store_id = trim($store_id);
@@ -89,13 +90,15 @@ class PromUaImporter
 
     public function getOrdersFromXls(): array
     {
-        /** @var \Maatwebsite\Excel\Readers\LaravelExcelReader $reader */
-        $reader = app('excel')->load($this->orders_xls_file);//->remember(30);
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($this->orders_xls_file);
+        $rows = $spreadsheet->getActiveSheet()->toArray();
 
-        $rows = [];
-        $reader->each(function(\Maatwebsite\Excel\Collections\CellCollection $cells) use (&$rows) {
-            //$rows[] = $cells->values()->toArray();
-            $rows[] = $cells->toArray();
+        $headers = array_map(function($item) {
+            return str_slug($item, '_');
+        }, array_shift($rows));
+
+        array_walk($rows, function (&$row) use ($headers) {
+            $row = array_combine($headers, $row);
         });
 
         $saneKeys = [
@@ -118,6 +121,7 @@ class PromUaImporter
             'metki' => 'labels',
             'summa_uah' => 'cost',
             'tsena_uah' => 'product_price',
+            'summa_so_skidkoy_uah' => 'cost_with_discount',
             'ttn' => 'ttn',
             'nomer_deklaratsii' => 'declaration'
         ];
@@ -125,7 +129,8 @@ class PromUaImporter
         $saneRows = array_map(function($row) use ($saneKeys) {
             $saneRow = [];
             foreach ($row as $key => $value) {
-                $saneRow[$saneKeys[$key]] = $value;
+                $saneKey = array_get($saneKeys, $key, $key);
+                $saneRow[$saneKey] = $value;
             }
             return $saneRow;
         }, $rows);
@@ -313,8 +318,13 @@ class PromUaImporter
                 'description' => (string)$row[3],
                 'description_length' => mb_strlen($row[3]),
                 'currency' => rtrim($row[6], ', '),
+                'url' => (string)$row[34],
                 'images' => trim(str_replace(' ', '', $row[11]), ','),
             ];
+
+//            if (!empty($row[2]) && mb_strlen($row[2]) > 250) {
+//                echo "<pre>"; print_r($row[2]); echo "</pre>"; exit;
+//            }
 
             $additional = [
                 'code' => $productCode,
@@ -348,11 +358,9 @@ class PromUaImporter
             }
 
             // Params (Specifications)
-            // $row[32] - Характеристики. Это делимитер для последующих характеристик?
-            // $row[33] - Пользовательские_Характеристики
-            $hasParams = !empty($row[34]);
+            $hasParams = !empty($row[35]);
             if ($hasParams) {
-                $paramsSlice = array_slice($row, 34);
+                $paramsSlice = array_slice($row, 35);
                 $paramsBatch = array_chunk($paramsSlice, 3);
                 $params = [];
                 foreach ($paramsBatch as $param) {
@@ -363,8 +371,6 @@ class PromUaImporter
 
                 $additional['params'] = json_encode($params);
             }
-
-            //$products[$productCode] = $additional;
 
             $products[$productCode] = array_merge($common, $additional);
         }
@@ -406,9 +412,10 @@ class PromUaImporter
         [31] => Метки
         [32] => Характеристики
         [33] => Пользовательские_Характеристики
-        [34] => Название_Характеристики
-        [35] => Измерение_Характеристики
-        [36] => Значение_Характеристики
+        [34] => Продукт_на_сайте
+        [35] => Название_Характеристики
+        [36] => Измерение_Характеристики
+        [37] => Значение_Характеристики
         */
     }
 
