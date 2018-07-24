@@ -322,10 +322,6 @@ class PromUaImporter
                 'images' => trim(str_replace(' ', '', $row[11]), ','),
             ];
 
-//            if (!empty($row[2]) && mb_strlen($row[2]) > 250) {
-//                echo "<pre>"; print_r($row[2]); echo "</pre>"; exit;
-//            }
-
             $additional = [
                 'code' => $productCode,
                 'quantity' => abs((int)$row[13]),
