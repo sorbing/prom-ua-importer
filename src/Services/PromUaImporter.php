@@ -297,6 +297,7 @@ class PromUaImporter
         $this->consoleInfo(sprintf('%s products were imported from CSV.', count($products)));
     }
 
+    // @todo Return structs[]
     public function getProductsFromCsv(): array
     {
         if (!file_exists($this->products_csv_file)) {
@@ -305,114 +306,59 @@ class PromUaImporter
 
         $rows = $this->parseCsvRows($this->products_csv_file);
 
+
         $products = [];
         foreach ($rows as $row) {
-            $productCode = (int)$row[20];
-            $price = (float)$row[5];
+            $struct = new \Sorbing\PromUaImporter\Structs\PromUaProductCsvStruct($row);
+
+            $productCode = $struct->code;
+            $price = $struct->price;
 
             $common = [
-                'sku' => (string)$row[0],
-                'name' => (string)$row[1],
+                'sku' => $struct->sku,
+                'name' => $struct->name,
                 'price' => $price,
-                'group_name' => (string)$row[15],
-                'description' => (string)$row[3],
-                'description_length' => mb_strlen($row[3]),
-                'currency' => rtrim($row[6], ', '),
-                'url' => (string)$row[34],
-                'images' => trim(str_replace(' ', '', $row[11]), ','),
+                'group_name' => $struct->group_name,
+                'description' => $struct->description,
+                'description_length' => mb_strlen($struct->description),
+                'currency' => rtrim($struct->currency, ', '),
+                'url' => $struct->url,
+                'images' => trim(str_replace(' ', '', $struct->images_list), ','),
             ];
 
             $additional = [
                 'code' => $productCode,
-                'quantity' => abs((int)$row[13]),
+                'quantity' => $struct->quantity,
                 'pre_order_days' => 0,
-                //'type' => $row[4], // Тип_товара. r - розница, г - опт и розн, w - только опт, ? - услуга
-                'unit' => $row[7],
-                'discount' => strpos($row[27], '%') ? (float)(trim($row[27], '%') / 100 * $price) : (float)$row[27],
-                'pack_type' => (string)$row[19],
-                'tags' => $row[2],    // Ключевые_слова | поиск в каталоге
-                'labels' => $row[31], // ?
-                'category_url' => $row[16],
+                //'type' => $struct->type, // Тип_товара
+                'unit' => $struct->unit,
+                'discount' => strpos($struct->discount, '%') ? (float)(trim($struct->discount, '%') / 100 * $price) : (float)$struct->discount,
+                'pack_type' => $struct->pack_type,
+                'tags' => $struct->tags,
+                'labels' => $struct->labels,
+                'category_url' => $struct->group_url, // @todo Rename category_url
             ];
 
             // Pre Order
-            $availabilityIdentity = (string)$row[12]; // Наличие
+            $availabilityIdentity = (string)$struct->available;
             if ($additional['quantity'] == 0 && $availabilityIdentity > 0) {
                 $additional['pre_order_days'] = (int)$availabilityIdentity;
             }
 
             // Wholesale
-            $prices = null;
-            if (strlen($row[9])) {
-                $optPrices = explode(';', $row[9]);
-                $optPieces = explode(';', $row[10]);
-                foreach ($optPrices as $i => $optPrice) {
-                    $prices[] = ['price' => (float)$optPrice, 'pieces' => (int)array_get($optPieces, $i)];
-                }
-
-                $additional['prices'] = json_encode($prices);
+            if ($struct->wholesale_price && $struct->wholesale_prices) {
+                $additional['prices'] = json_encode($struct->wholesale_prices);
             }
 
             // Params (Specifications)
-            $hasParams = !empty($row[35]);
-            if ($hasParams) {
-                $paramsSlice = array_slice($row, 35);
-                $paramsBatch = array_chunk($paramsSlice, 3);
-                $params = [];
-                foreach ($paramsBatch as $param) {
-                    if ($param[0]) {
-                        $params[] = ['name' => $param[0], 'unit' => $param[1], 'value' => $param[2]];
-                    }
-                }
-
-                $additional['params'] = json_encode($params);
+            if (count($struct->params)) {
+                $additional['params'] = json_encode($struct->params);
             }
 
             $products[$productCode] = array_merge($common, $additional);
         }
 
         return $products;
-
-        /*
-        [0] => Код_товара
-        [1] => Название_позиции
-        [2] => Ключевые_слова
-        [3] => Описание
-        [4] => Тип_товара
-        [5] => Цена
-        [6] => Валюта
-        [7] => Единица_измерения
-        [8] => Минимальный_объем_заказа
-        [9] => Оптовая_цена
-        [10] => Минимальный_заказ_опт
-        [11] => Ссылка_изображения
-        [12] => Наличие
-        [13] => Количество
-        [14] => Номер_группы
-        [15] => Название_группы
-        [16] => Адрес_подраздела
-        [17] => Возможность_поставки
-        [18] => Срок_поставки
-        [19] => Способ_упаковки
-        [20] => Уникальный_идентификатор
-        [21] => Идентификатор_товара
-        [22] => Идентификатор_подраздела
-        [23] => Идентификатор_группы
-        [24] => Производитель
-        [25] => Гарантийный_срок
-        [26] => Страна_производитель
-        [27] => Скидка
-        [28] => ID_группы_разновидностей
-        [29] => Название_производителя
-        [30] => Адрес_производителя
-        [31] => Метки
-        [32] => Характеристики
-        [33] => Пользовательские_Характеристики
-        [34] => Продукт_на_сайте
-        [35] => Название_Характеристики
-        [36] => Измерение_Характеристики
-        [37] => Значение_Характеристики
-        */
     }
 
     protected function parseCsvRows($csvFile): array
