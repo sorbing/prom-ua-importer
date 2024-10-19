@@ -104,26 +104,31 @@ class PromUaImporter
         $saneKeys = [
             'nomer' => 'code',
             'data' => 'date',
-            'fio' => 'customer_name',
-            'ot_kompanii' => 'seller_comment',
+            'pib' => 'customer_name',
+            'vid_kompanii' => 'seller_comment',
             'telefon' => 'customer_phone',
             'email' => 'customer_email',
-            'adres' => 'address',
-            'sposob_dostavki' => 'delivery_type',
-            'sposob_oplaty' => 'payment_type',
+            'adresa' => 'address',
+            'sposib_dostavki' => 'delivery_type',
+            'sposib_oplati' => 'payment_type',
             'status' => 'status',
-            'prichina_otmeny' => 'cancellation_reason',
-            'kommentariy_k_otmene' => 'cancellation_comment',
+            'prichina_skasuvannya' => 'cancellation_reason',
+            'komentar_do_vidmini' => 'cancellation_comment',
             'artikul' => 'product_sku',
-            'nazvanie_tovara' => 'product_name',
-            'kolichestvo' => 'product_qty',
-            'istochnik' => 'source',
-            'metki' => 'labels',
-            'summa_uah' => 'cost',
-            'tsena_uah' => 'product_price',
-            'summa_so_skidkoy_uah' => 'cost_with_discount',
-            'ttn' => 'ttn',
-            'nomer_deklaratsii' => 'declaration'
+            'nazva_tovaru' => 'product_name',
+            'kilkist' => 'product_qty',
+            'dzherelo' => 'source',
+            'mitki' => 'labels',
+            //[17] => promokod
+            //[18] => znizhka_po_promokodu
+            'suma_uah' => 'cost',
+            'tsina_uah' => 'product_price',
+            'suma_zi_znizhkoyu_uah' => 'cost_with_discount',
+            //[23] => suma_komisii_tovar
+            //[24] => vidsotok_komisii_tovar
+            //[25] => suma_komisii_zamovlennya
+            //[26] => status_komisii_zamovlennya
+            'nomer_deklaratsii' => 'ttn',
         ];
 
         $saneRows = array_map(function($row) use ($saneKeys) {
@@ -145,7 +150,6 @@ class PromUaImporter
             $date = \Carbon\Carbon::createFromFormat('d.m.y H:i', $order['date'])->format('Y-m-d H:i:s');
 
             $order['date'] = $date;
-            $order['ttn'] = $order['ttn'] ?? $order['declaration'];
 
             $item = [
                 'code' => null,
@@ -155,7 +159,7 @@ class PromUaImporter
                 'price' => (float)$order['product_price'],
             ];
 
-            unset($order['declaration'], $order['product_name'], $order['product_qty'], $order['product_price'], $order['product_sku'], $order['declaration']);
+            unset($order['product_name'], $order['product_qty'], $order['product_price'], $order['product_sku']);
 
             if (empty($orders[$orderCode])) {
                 $orders[$orderCode] = $order;
